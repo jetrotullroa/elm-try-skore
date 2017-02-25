@@ -26,7 +26,7 @@ type alias Player =
 type alias Play =
     { id : Int
     , playerId : Int
-    , name : Int
+    , name : String
     , points : Int
     }
 
@@ -55,8 +55,75 @@ update msg model =
         Input name ->
             { model | name = name }
 
+        Cancel ->
+            { model | name = "", playerId = Nothing }
+
+        Save ->
+            if (String.isEmpty model.name) then
+                model
+            else
+                save model
+
         _ ->
             model
+
+
+save : Model -> Model
+save model =
+    case model.playerId of
+        Just id ->
+            edit model id
+
+        Nothing ->
+            add model
+
+
+edit : Model -> Int -> Model
+edit model id =
+    let
+        newPlayers =
+            List.map
+                (\player ->
+                    if player.id == id then
+                        { player | name = model.name }
+                    else
+                        player
+                )
+                model.players
+
+        newPlays =
+            List.map
+                (\play ->
+                    if play.playerId == id then
+                        { play | name = model.name }
+                    else
+                        play
+                )
+                model.plays
+    in
+        { model
+            | players = newPlayers
+            , plays = newPlays
+            , name = ""
+            , playerId = Nothing
+        }
+
+
+add : Model -> Model
+add model =
+    let
+        -- first get the new player details
+        player =
+            Player (List.length model.players) model.name 0
+
+        -- add the player to the Player list
+        newPlayers =
+            player :: model.players
+    in
+        { model
+            | players = newPlayers
+            , name = ""
+        }
 
 
 view : Model -> Html Msg
@@ -64,6 +131,7 @@ view model =
     div [ class "scoreboard" ]
         [ h1 [] [ text "Skore" ]
         , playerForm model
+        , p [] [ text (toString model) ]
         ]
 
 
