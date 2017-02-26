@@ -70,8 +70,27 @@ update msg model =
         Edit player ->
             { model | name = player.name, playerId = Just player.id }
 
-        _ ->
-            model
+        DeletePlay play ->
+            deletePlay model play
+
+
+deletePlay : Model -> Play -> Model
+deletePlay model play =
+    let
+        newPlays =
+            List.filter (\p -> p.id /= play.id) model.plays
+
+        newPlayers =
+            List.map
+                (\player ->
+                    if player.id == play.playerId then
+                        { player | points = player.points - play.points }
+                    else
+                        player
+                )
+                model.players
+    in
+        { model | plays = newPlays, players = newPlayers }
 
 
 score : Model -> Player -> Int -> Model
@@ -153,16 +172,6 @@ add model =
         }
 
 
-view : Model -> Html Msg
-view model =
-    div [ class "scoreboard" ]
-        [ h1 [] [ text "Skore" ]
-        , playerSection model
-        , playerForm model
-        , p [] [ text (toString model) ]
-        ]
-
-
 playerSection : Model -> Html Msg
 playerSection model =
     div []
@@ -221,7 +230,7 @@ pointsTotal model =
                 |> List.sum
     in
         footer []
-            [ div [] [ text "Total: " ]
+            [ div [] [ text "Skore: " ]
             , div [] [ text (toString total) ]
             ]
 
@@ -238,6 +247,53 @@ playerForm model =
             []
         , button [ type_ "submit" ] [ text "Save" ]
         , button [ type_ "cancel", onClick Cancel ] [ text "Cancel" ]
+        ]
+
+
+playSection : Model -> Html Msg
+playSection model =
+    div []
+        [ playListHeader
+        , playList model
+        ]
+
+
+playListHeader : Html Msg
+playListHeader =
+    header []
+        [ div [] [ text "Plays" ]
+        , div [] [ text "Points" ]
+        ]
+
+
+playList : Model -> Html Msg
+playList model =
+    model.plays
+        |> List.map play
+        |> ul []
+
+
+play : Play -> Html Msg
+play play =
+    li []
+        [ i
+            [ class "remove"
+            , onClick (DeletePlay play)
+            ]
+            []
+        , div [] [ text play.name ]
+        , div [] [ text (toString play.points) ]
+        ]
+
+
+view : Model -> Html Msg
+view model =
+    div [ class "scoreboard" ]
+        [ h1 [] [ text "Points" ]
+        , playerSection model
+        , playerForm model
+        , playSection model
+        , p [] [ text (toString model) ]
         ]
 
 

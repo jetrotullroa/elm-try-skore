@@ -8260,6 +8260,32 @@ var _elm_lang$html$Html_Events$Options = F2(
 		return {stopPropagation: a, preventDefault: b};
 	});
 
+var _user$project$Main$playListHeader = A2(
+	_elm_lang$html$Html$header,
+	{ctor: '[]'},
+	{
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$div,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text('Plays'),
+				_1: {ctor: '[]'}
+			}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$div,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text('Points'),
+					_1: {ctor: '[]'}
+				}),
+			_1: {ctor: '[]'}
+		}
+	});
 var _user$project$Main$pointsTotal = function (model) {
 	var total = _elm_lang$core$List$sum(
 		A2(
@@ -8278,7 +8304,7 @@ var _user$project$Main$pointsTotal = function (model) {
 				{ctor: '[]'},
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html$text('Total: '),
+					_0: _elm_lang$html$Html$text('Skore: '),
 					_1: {ctor: '[]'}
 				}),
 			_1: {
@@ -8343,6 +8369,26 @@ var _user$project$Main$edit = F2(
 		return _elm_lang$core$Native_Utils.update(
 			model,
 			{players: newPlayers, plays: newPlays, name: '', playerId: _elm_lang$core$Maybe$Nothing});
+	});
+var _user$project$Main$deletePlay = F2(
+	function (model, play) {
+		var newPlayers = A2(
+			_elm_lang$core$List$map,
+			function (player) {
+				return _elm_lang$core$Native_Utils.eq(player.id, play.playerId) ? _elm_lang$core$Native_Utils.update(
+					player,
+					{points: player.points - play.points}) : player;
+			},
+			model.players);
+		var newPlays = A2(
+			_elm_lang$core$List$filter,
+			function (p) {
+				return !_elm_lang$core$Native_Utils.eq(p.id, play.id);
+			},
+			model.plays);
+		return _elm_lang$core$Native_Utils.update(
+			model,
+			{plays: newPlays, players: newPlayers});
 	});
 var _user$project$Main$initModel = {
 	players: {ctor: '[]'},
@@ -8429,11 +8475,76 @@ var _user$project$Main$update = F2(
 						playerId: _elm_lang$core$Maybe$Just(_p2.id)
 					});
 			default:
-				return model;
+				return A2(_user$project$Main$deletePlay, model, _p1._0);
 		}
 	});
 var _user$project$Main$DeletePlay = function (a) {
 	return {ctor: 'DeletePlay', _0: a};
+};
+var _user$project$Main$play = function (play) {
+	return A2(
+		_elm_lang$html$Html$li,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$i,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('remove'),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html_Events$onClick(
+							_user$project$Main$DeletePlay(play)),
+						_1: {ctor: '[]'}
+					}
+				},
+				{ctor: '[]'}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$div,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(play.name),
+						_1: {ctor: '[]'}
+					}),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$div,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text(
+								_elm_lang$core$Basics$toString(play.points)),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				}
+			}
+		});
+};
+var _user$project$Main$playList = function (model) {
+	return A2(
+		_elm_lang$html$Html$ul,
+		{ctor: '[]'},
+		A2(_elm_lang$core$List$map, _user$project$Main$play, model.plays));
+};
+var _user$project$Main$playSection = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _user$project$Main$playListHeader,
+			_1: {
+				ctor: '::',
+				_0: _user$project$Main$playList(model),
+				_1: {ctor: '[]'}
+			}
+		});
 };
 var _user$project$Main$Cancel = {ctor: 'Cancel'};
 var _user$project$Main$Save = {ctor: 'Save'};
@@ -8646,7 +8757,7 @@ var _user$project$Main$view = function (model) {
 				{ctor: '[]'},
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html$text('Skore'),
+					_0: _elm_lang$html$Html$text('Points'),
 					_1: {ctor: '[]'}
 				}),
 			_1: {
@@ -8657,16 +8768,20 @@ var _user$project$Main$view = function (model) {
 					_0: _user$project$Main$playerForm(model),
 					_1: {
 						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$p,
-							{ctor: '[]'},
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html$text(
-									_elm_lang$core$Basics$toString(model)),
-								_1: {ctor: '[]'}
-							}),
-						_1: {ctor: '[]'}
+						_0: _user$project$Main$playSection(model),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$p,
+								{ctor: '[]'},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text(
+										_elm_lang$core$Basics$toString(model)),
+									_1: {ctor: '[]'}
+								}),
+							_1: {ctor: '[]'}
+						}
 					}
 				}
 			}
